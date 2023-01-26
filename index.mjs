@@ -4,15 +4,8 @@ import configuration from './config.json' assert {type: 'json'};
 
 
 (async () => {
-     //Randomize User agent or Set a valid one
-     const userAgent = new UserAgent();
-     const UA = userAgent || USER_AGENT;
      const browser = await puppeteer.launch({ headless: false,args: ["--window-size=1920,1080", "--window-position=0,0"] });
      const page = await browser.newPage();
-
-
-
-    
     
     const loginPage = "https://www.linkedin.com/login"
     const myNetworkPage = "https://www.linkedin.com/mynetwork/"
@@ -20,8 +13,6 @@ import configuration from './config.json' assert {type: 'json'};
     //user data
     const username = configuration.users.username
     const password = configuration.users.password
-    console.log(username, password)
-
 
     await page.setViewport({ width: 752, height: 1920});
     
