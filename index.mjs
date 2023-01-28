@@ -1,9 +1,9 @@
 import puppeteer from 'puppeteer';
-import UserAgent from 'user-agents';
 import configuration from './config.json' assert {type: 'json'};
 
 
 (async () => {
+    let connections = 0;
      const browser = await puppeteer.launch({ headless: false,args: ["--window-size=1920,1080", "--window-position=0,0"] });
      const page = await browser.newPage();
     
@@ -18,9 +18,14 @@ import configuration from './config.json' assert {type: 'json'};
     
     await page.goto(loginPage, { waitUntil: 'domcontentloaded' })
     await login(username, password, page);
-    await page.waitForNetworkIdle({ idleTime: 10000 });
+
     await page.goto(myNetworkPage, { waitUntil: 'domcontentloaded' })
-    await goToNetworkPageAndConnect(page);
+    for(let i = 0;i < configuration.data.peopleToAddX4;i++)    
+    {
+        console.log(connections*i)
+        await goToNetworkPageAndConnect(page,connections);
+        await page.reload({ waitUntil: [ "domcontentloaded"] });
+    }
     console.log("success!")
     // await browser.close();
 })();
@@ -34,23 +39,24 @@ async function login(username, password, page) {
     await page.waitForNetworkIdle({ idleTime: 500 });
 }
 
-async function goToNetworkPageAndConnect(page){
+async function goToNetworkPageAndConnect(page,connections){
     console.log("im in network page")
     
     const discoverUserCard = '.discover-fluid-entity-list--item .mt2'
     await page.waitForSelector(discoverUserCard);
-    await page.evaluate(() => {
-        page.scrollTo(0, document.body.scrollHeight);
-    });
-    
+
     console.log("loaded")
+    // await page.evaluate(() => {
+    //     page.scrollTo(0, document.body.scrollHeight);
+    // });
     const buttons = await page.$$(discoverUserCard);
         console.log(buttons)
     //    // Iterate over buttons and click on each one
-    //    for (const button of buttons) {
-    //        await button.click();
-    //        await new Promise(resolve => setTimeout(resolve, 1000));
-    //    }
+       for (const button of buttons) {
+           await button.click();
+           connections++;
+           await new Promise(resolve => setTimeout(resolve, 1000));
+       }
 
 }
 
@@ -72,7 +78,3 @@ async function autoScroll(page){
         });
     });
 }
-// const buttons = await page.evaluate(() => {
-//     const container = document.querySelector('#container');
-//     return Array.from(container.querySelectorAll('.my-button'));
-// });
