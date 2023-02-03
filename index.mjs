@@ -14,18 +14,17 @@ import configuration from './config.json' assert {type: 'json'};
     const username = configuration.users.username
     const password = configuration.users.password
 
-    await page.setViewport({ width: 752, height: 1920});
+    await page.setViewport({ width: 752, height: 1920}); //opens on 752 width to avoid chat being expanded automatically
     
     await page.goto(loginPage, { waitUntil: 'domcontentloaded' })
     await login(username, password, page);
 
     await page.goto(myNetworkPage, { waitUntil: 'domcontentloaded' })
-    for(let i = 0;i < configuration.data.peopleToAddX4;i++)    
-    {
-        console.log(connections*i)
-        await goToNetworkPageAndConnect(page,connections);
+    // for(let i = 0;i < configuration.data.peopleToAddX4;i++)    
+    // {
+        await find_items(page);
         await page.reload({ waitUntil: [ "domcontentloaded"] });
-    }
+    // }
     console.log("success!")
     // await browser.close();
 })();
@@ -39,42 +38,26 @@ async function login(username, password, page) {
     await page.waitForNetworkIdle({ idleTime: 500 });
 }
 
-async function goToNetworkPageAndConnect(page,connections){
-    console.log("im in network page")
+async function find_items(page){
+    const discoverUserCard = '.discover-person-card__name'
+    const connectButton = 'Connect';
     
-    const discoverUserCard = '.discover-fluid-entity-list--item .mt2'
-    await page.waitForSelector(discoverUserCard);
+    await page.waitForSelector(discoverUserCard)
+    await page.waitForSelector(`text/${connectButton}`);
+    
+    console.log("Beep")
 
-    console.log("loaded")
-    // await page.evaluate(() => {
-    //     page.scrollTo(0, document.body.scrollHeight);
-    // });
-    const buttons = await page.$$(discoverUserCard);
-        console.log(buttons)
-    //    // Iterate over buttons and click on each one
-       for (const button of buttons) {
-           await button.click();
-           connections++;
-           await new Promise(resolve => setTimeout(resolve, 1000));
+    let connects = await page.$$(`text/${connectButton}`)
+    console.log("Beep Beep")
+
+    console.log(`Connect buttons: ${connects}\n total: ${connects.length}`)
+       for (let i = 0;i < 8;i++) {
+        const connect = connects[i];
+        let randomNum = (Math.random() * (2 - 0.5)) + 0.5;
+        await connect.evaluate(c => c.click());
+        await new Promise(resolve => setTimeout(resolve, randomNum*1000));
        }
 
+
 }
 
-async function autoScroll(page){
-    await page.evaluate(async () => {
-        await new Promise((resolve) => {
-            var totalHeight = 0;
-            var distance = 100;
-            var timer = setInterval(() => {
-                var scrollHeight = document.body.scrollHeight;
-                window.scrollBy(0, distance);
-                totalHeight += distance;
-
-                if(totalHeight >= scrollHeight - window.innerHeight){
-                    clearInterval(timer);
-                    resolve();
-                }
-            }, 100);
-        });
-    });
-}
